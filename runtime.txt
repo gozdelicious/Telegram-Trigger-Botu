@@ -1,0 +1,33 @@
+   python-3.11.9
+```
+5. **"Commit changes"** → **"Commit changes"**
+
+### 2. Render.com Otomatik Yeniden Deploy Edecek
+
+- Birkaç saniye bekleyin
+- Render.com GitHub'daki değişikliği algılayıp otomatik yeniden başlatacak
+- Logs'u izleyin
+
+## ✅ Kontrol
+
+Loglar şöyle başlamalı:
+```
+==> Using Python version 3.11.9
+==> Running build command 'pip install -r requirements.txt'...
+==> Build successful 🎉
+==> Running 'python bot.py'
+Bot başlatılıyor...
+```
+
+---
+
+### Alternatif: requirements.txt'i Güncelleyin (Eğer runtime.txt çalışmazsa)
+
+Eğer yukarıdaki çözüm işe yaramazsa, kütüphane sürümünü güncelleyelim:
+
+1. GitHub'da `requirements.txt` dosyasını düzenleyin
+2. İçeriği şununla değiştirin:
+```
+   python-telegram-bot==21.0
+   certifi
+   urllib3
