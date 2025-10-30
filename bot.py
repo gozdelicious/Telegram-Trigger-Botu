@@ -16,8 +16,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN', 'BURAYA_BOT_TOKEN_YAZIŞTIRIN')
 # Ses dosyalarınızın GitHub raw URL'lerini buraya ekleyin
 AUDIO_FILES = {
     'zabaha': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
-    'iyi geceler': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
-    'ne zaman bitecek': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
+    'zabah': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
     # Daha fazla ses dosyası ekleyebilirsiniz
 }
 
@@ -51,7 +50,12 @@ AUTO_RESPONSES = {
     'zabaha': {
         'text': None,
         'audio': 'zabaha', 
-        'image': 'resim'  # IMAGE_FILES'daki key
+        'image': None,
+    },
+     'zabah': {
+        'text': None,
+        'audio': 'zabah',
+        'image': None,
     }
     # Daha fazla tetikleyici kelime ekleyebilirsiniz
 }
