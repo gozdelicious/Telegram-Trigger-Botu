@@ -15,8 +15,9 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN', 'BURAYA_BOT_TOKEN_YAZIŞTIRIN')
 
 # Ses dosyalarınızın GitHub raw URL'lerini buraya ekleyin
 AUDIO_FILES = {
-    'merhaba': 'https://raw.githubusercontent.com/KULLANICI_ADI/REPO_ADI/main/sesler/merhaba.ogg',
-    'günaydın': 'https://raw.githubusercontent.com/KULLANICI_ADI/REPO_ADI/main/sesler/gunaydin.ogg',
+    'zabaha': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
+    'iyi geceler': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
+    'ne zaman bitecek": 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
     # Daha fazla ses dosyası ekleyebilirsiniz
 }
 
