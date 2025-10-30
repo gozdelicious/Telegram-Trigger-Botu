@@ -99,10 +99,10 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
     if not data:
-        await update.message.reply_text("Henüz kayıtlı yazı yok 📭")
+        await update.message.reply_text("Henüz kayıtlı kitap yok 📭")
         return
     message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
-    await update.message.reply_text(f"📚 Kayıtlı Yazılar:\n\n{message}")
+    await update.message.reply_text(f"📚 Okunan Kitaplar:\n\n{message}")
 
 async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
