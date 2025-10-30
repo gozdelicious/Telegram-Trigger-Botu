@@ -1,34 +1,24 @@
 import os
-import logging
 import requests
 from io import BytesIO
-from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from telegram import Update, InputFile
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-# --- Logging ayarları ---
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+# --- ÇEVRE DEĞİŞKENİNDEN TOKEN ---
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# --- Bot token ---
-BOT_TOKEN = os.environ.get('BOT_TOKEN', 'BURAYA_BOT_TOKEN_YAZIŞTIRIN')
-
-# --- Ses dosyaları ---
+# --- SES VE GÖRSEL KAYNAKLARI ---
 AUDIO_FILES = {
-    'zabaha': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
-    'zabah': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
-    'iyi geceler': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
-    'ne zaman bitecek': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
+    'merhaba': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/merhaba.ogg',
+    'günaydın': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/gunaydin.ogg',
+    'zabaha': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg'
 }
 
-# --- Görsel dosyaları ---
 IMAGE_FILES = {
-    'resim': 'https://raw.githubusercontent.com/KULLANICI_ADI/REPO_ADI/main/resimler/ornek.jpg',
+    'resim': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/resimler/yardim.jpg'
 }
 
-# --- Otomatik yanıt kuralları ---
+# --- OTOMATİK CEVAPLAR ---
 AUTO_RESPONSES = {
     'merhaba': {
         'text': '👋 Merhaba! Nasılsın?',
@@ -36,7 +26,7 @@ AUTO_RESPONSES = {
         'image': None
     },
     'günaydın': {
-        'text': '🌅 Günaydın! İyi günler dilerim!',
+        'text': '🌅 Günaydın! Harika bir gün seninle başlasın!',
         'audio': 'günaydın',
         'image': None
     },
@@ -45,75 +35,55 @@ AUTO_RESPONSES = {
         'audio': None,
         'image': None
     },
-    'ay imdat': {
-        'text': 'AY NOLDU NOLDU!!!',
+    'yardım': {
+        'text': '❓ Size nasıl yardımcı olabilirim?',
         'audio': None,
-        'image': 'resim'
-    },
-    'zabaha': {
-        'text': None,
-        'audio': 'zabaha',
         'image': 'resim'
     },
     'zabah': {
         'text': None,
-        'audio': 'zabah',
-        'image': 'resim'
+        'audio': 'zabaha',
+        'image': None
     }
 }
 
-# --- Mesaj işleyici ---
+# --- MESAJ İŞLEYİCİ ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text:
-        return
-    
-    message_text = update.message.text.lower().strip()
-    
+    text = update.message.text.lower()
+    print(f"Gelen mesaj: {text}")
+
     for trigger, response in AUTO_RESPONSES.items():
-        if trigger in message_text:
-            try:
-                # Metin gönder
-                if response['text']:
-                    await update.message.reply_text(response['text'])
-                
-                # Görsel gönder
-                if response['image'] and response['image'] in IMAGE_FILES:
-                    image_url = IMAGE_FILES[response['image']]
+        if trigger in text:
+            # Metin gönder
+            if response['text']:
+                await update.message.reply_text(response['text'])
+
+            # Ses gönder
+            if response['audio']:
+                audio_url = AUDIO_FILES.get(response['audio'])
+                if audio_url:
+                    resp = requests.get(audio_url)
+                    if resp.status_code == 200:
+                        await update.message.reply_voice(
+                            voice=InputFile(BytesIO(resp.content), filename=f"{response['audio']}.ogg")
+                        )
+                    else:
+                        await update.message.reply_text("🎧 Ses dosyası indirilemedi.")
+            
+            # Görsel gönder
+            if response['image']:
+                image_url = IMAGE_FILES.get(response['image'])
+                if image_url:
                     await update.message.reply_photo(photo=image_url)
-                
-                # Ses gönder
-                if response['audio'] and response['audio'] in AUDIO_FILES:
-                    audio_url = AUDIO_FILES[response['audio']]
-                    try:
-                        # Ses dosyasını indir
-                        response_data = requests.get(audio_url)
-                        response_data.raise_for_status()
 
-                        # BytesIO ile Telegram'a gönder
-                        audio_file = BytesIO(response_data.content)
-                        audio_file.name = "ses.ogg"
-                        await update.message.reply_voice(voice=audio_file)
+            break  # ilk eşleşmede çık
 
-                    except Exception as e:
-                        logger.error(f"Ses gönderiminde hata: {e}")
-                
-                logger.info(f"'{trigger}' tetikleyicisine yanıt verildi")
-                break
-                
-            except Exception as e:
-                logger.error(f"Yanıt gönderilirken hata: {e}")
-
-# --- Hata yakalayıcı ---
-async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.error(f"Hata oluştu: {context.error}")
-
-# --- Ana fonksiyon ---
+# --- ANA FONKSİYON ---
 def main():
-    application = Application.builder().token(BOT_TOKEN).build()
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_error_handler(error_handler)
-    logger.info("Bot başlatılıyor...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    print("🤖 Bot çalışıyor...")
+    app.run_polling()
 
 if __name__ == '__main__':
     main()
