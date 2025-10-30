@@ -22,12 +22,12 @@ IMAGE_FILES = {
 AUTO_RESPONSES = {
     'merhaba': {
         'text': '👋 MERHABA! Ay heyecanlandım. İlk merhaba diyen ben olmalıyım. HER ZAMAN!',
-        'audio': None
+        'audio': None,
         'image': None
     },
     'günaydın': {
         'text': '🌅 Günaydın! Güzel bir gün olsun!',
-        'audio': None
+        'audio': None,
         'image': None
     },
     'selam': {
@@ -47,7 +47,7 @@ AUTO_RESPONSES = {
     },
     'iyi geceler': {
         'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
-        'audio': None
+        'audio': None,
         'image': None
         },
     'İyi geceler': {
