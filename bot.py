@@ -55,6 +55,11 @@ AUTO_RESPONSES = {
         'audio': 'zabaha',
         'image': None
         },
+    'seks': {
+        'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️'
+        'audio': None,
+        'image': None
+        }
 }
 
 # --- MESAJ İŞLEYİCİ ---
