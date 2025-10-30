@@ -202,6 +202,7 @@ def main():
     app.add_handler(CommandHandler("kitaplar", kitaplar_command))
     app.add_handler(CommandHandler("delete", delete_command))
     app.add_handler(CommandHandler("find", find_command))
+    app.add_handler(CommandHandler("export", export_command))
 
     # Mesaj handler'ı
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
