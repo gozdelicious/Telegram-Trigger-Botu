@@ -81,7 +81,7 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
     data.append(text)
     save_data(data)
-    await update.message.reply_text(f"✅ Yazı kaydedildi!\n📝 {text}")
+    await update.message.reply_text(f"✅ Kitap kaydedildi!\n📝 {text}")
 
 async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
