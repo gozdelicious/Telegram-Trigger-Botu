@@ -47,7 +47,7 @@ AUTO_RESPONSES = {
         'text': '❓ Size nasıl yardımcı olabilirim?',
         'audio': None,
         'image': 'resim'  # IMAGE_FILES'daki key
-    }
+    },
     'zabaha': {
         'text': None,
         'audio': 'zabaha', 
