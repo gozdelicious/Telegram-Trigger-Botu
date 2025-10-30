@@ -14,7 +14,7 @@ from telegram.ext import (
 
 # ---------- AYARLAR ----------
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-DATA_FILE = "kitaplar.json"
+DATA_FILE = "/data/kitaplar.json"
 
 # ---------- LOGGING ----------
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
