@@ -54,12 +54,12 @@ AUTO_RESPONSES = {
         'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
         'audio': 'zabaha',
         'image': None
-        },
+    },   
     'seks': {
-        'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️'
+        'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️',
         'audio': None,
         'image': None
-        }
+    }
 }
 
 # --- MESAJ İŞLEYİCİ ---
