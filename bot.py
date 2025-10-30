@@ -36,7 +36,7 @@ AUTO_RESPONSES = {
         'image': None
     },
     'yardım': {
-        'text': '❓ Size nasıl yardımcı olabilirim?',
+        'text': 'AY NOLUYO NOLUYOOO 😱😱😱',
         'audio': None,
         'image': 'resim'
     },
