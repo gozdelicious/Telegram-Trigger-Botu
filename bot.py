@@ -41,7 +41,7 @@ AUTO_RESPONSES = {
         'image': 'resim'
     },
     'zabah': {
-        'text': None,
+        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
         'audio': 'zabaha',
         'image': None
     }
