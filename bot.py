@@ -1,12 +1,24 @@
 import os
 import json
+import logging
 import requests
 from io import BytesIO
 from telegram import Update, InputFile
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import (
+    ApplicationBuilder,
+    MessageHandler,
+    CommandHandler,   # <- EKLENDİ
+    filters,
+    ContextTypes
+)
 
-# --- ÇEVRE DEĞİŞKENİNDEN TOKEN ---
+# ---------- AYARLAR ----------
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+DATA_FILE = "kitaplar.json"
+
+# ---------- LOGGING ----------
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 # --- SES VE GÖRSEL KAYNAKLARI ---
 AUDIO_FILES = {
@@ -50,12 +62,7 @@ AUTO_RESPONSES = {
         'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
         'audio': None,
         'image': None
-        },
-    'İyi geceler': {
-        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
-        'audio': 'zabaha',
-        'image': None
-    },   
+    },
     'seks': {
         'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️',
         'audio': None,
@@ -63,19 +70,22 @@ AUTO_RESPONSES = {
     }
 }
 
-# --- DATA DOSYASI ---
-DATA_FILE = "kitaplar.json"
-
+# ---------- VERİ (GLOBAL) ----------
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except Exception:
+                logger.exception("DATA_FILE okunurken hata; sıfırdan oluşturuluyor.")
+                return []
     return []
-# --- KOMUTLAR ---
+
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+# ---------- KOMUTLAR ----------
 async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = " ".join(context.args)
     if not text:
@@ -128,47 +138,62 @@ async def find_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = "\n".join([f"{i}. {item}" for i, item in results])
     await update.message.reply_text(f"🔍 Arama Sonuçları ({query}):\n\n{message}")
 
-# --- MESAJ İŞLEYİCİ ---
+# ---------- MESAJ İŞLEYİCİ ----------
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Güvenlik: mesaj veya text yoksa çık
+    if not update.message or not update.message.text:
+        return
+
     text = update.message.text.lower()
-    print(f"Gelen mesaj: {text}")
+    logger.info(f"Gelen mesaj: {text[:120]}")  # sadece ilk 120 karakter logla
 
     for trigger, response in AUTO_RESPONSES.items():
         if trigger in text:
             # Metin gönder
-            if response['text']:
+            if response.get('text'):
                 await update.message.reply_text(response['text'])
 
             # Ses gönder
-            if response['audio']:
+            if response.get('audio'):
                 audio_url = AUDIO_FILES.get(response['audio'])
                 if audio_url:
-                    resp = requests.get(audio_url)
-                    if resp.status_code == 200:
-                        await update.message.reply_voice(
-                            voice=InputFile(BytesIO(resp.content), filename=f"{response['audio']}.ogg")
-                        )
-                    else:
-                        await update.message.reply_text("🎧 Ses dosyası indirilemedi.")
+                    try:
+                        r = requests.get(audio_url, timeout=8)
+                        r.raise_for_status()
+                        buf = BytesIO(r.content)
+                        await update.message.reply_voice(voice=InputFile(buf, filename=f"{response['audio']}.ogg"))
+                    except Exception as e:
+                        logger.exception("Ses gönderilirken hata")
+                        await update.message.reply_text("🎧 Ses dosyası gönderilemedi.")
             
             # Görsel gönder
-            if response['image']:
+            if response.get('image'):
                 image_url = IMAGE_FILES.get(response['image'])
                 if image_url:
-                    await update.message.reply_photo(photo=image_url)
-
+                    try:
+                        await update.message.reply_photo(photo=image_url)
+                    except Exception:
+                        logger.exception("Görsel gönderme hatası")
             break  # ilk eşleşmede çık
 
-# --- ANA FONKSİYON ---
+# ---------- ANA FONKSİYON ----------
 def main():
+    if not BOT_TOKEN:
+        logger.critical("BOT_TOKEN environment variable eksik. Bot başlamaz.")
+        return
+
     app = ApplicationBuilder().token(BOT_TOKEN).build()
-    
+
+    # Komut handler'ları
     app.add_handler(CommandHandler("save", save_command))
     app.add_handler(CommandHandler("kitaplar", kitaplar_command))
     app.add_handler(CommandHandler("delete", delete_command))
     app.add_handler(CommandHandler("find", find_command))
+
+    # Mesaj handler'ı
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("🤖 Bot çalışıyor...")
+
+    logger.info("🤖 Bot çalışıyor...")
     app.run_polling()
 
 if __name__ == '__main__':
