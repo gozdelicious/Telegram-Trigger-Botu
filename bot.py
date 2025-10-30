@@ -49,6 +49,7 @@ AUTO_RESPONSES = {
         'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
         'audio': 'zabaha',
         'image': None
+        }
 }
 
 # --- MESAJ İŞLEYİCİ ---
