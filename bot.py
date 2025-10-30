@@ -21,21 +21,21 @@ IMAGE_FILES = {
 # --- OTOMATİK CEVAPLAR ---
 AUTO_RESPONSES = {
     'merhaba': {
-        'text': '👋 Merhaba! Nasılsın?',
-        'audio': 'merhaba',
+        'text': '👋 MERHABA! Ay heyecanlandım. İlk merhaba diyen ben olmalıyım. HER ZAMAN!',
+        'audio': None
         'image': None
     },
     'günaydın': {
-        'text': '🌅 Günaydın! Harika bir gün seninle başlasın!',
-        'audio': 'günaydın',
+        'text': '🌅 Günaydın! Güzel bir gün olsun!',
+        'audio': None
         'image': None
     },
     'selam': {
-        'text': '✨ Selam! Hoş geldin!',
+        'text': '✨ Selam cnms! Hoş geldin!',
         'audio': None,
         'image': None
     },
-    'yardım': {
+    'imdat': {
         'text': 'AY NOLUYO NOLUYOOO 😱😱😱',
         'audio': None,
         'image': 'resim'
@@ -55,11 +55,6 @@ AUTO_RESPONSES = {
         'audio': 'zabaha',
         'image': None
         },
-    'seks': {
-        'text': 'Şşşş,🤫🤫 bunu MZ'de konuşuyoruz. 🙂‍↔️',
-        'audio': None,
-        'image': None
-        }
 }
 
 # --- MESAJ İŞLEYİCİ ---
