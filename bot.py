@@ -47,7 +47,17 @@ AUTO_RESPONSES = {
     },
     'iyi geceler': {
         'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
+        'audio': None
+        'image': None
+        },
+    'İyi geceler': {
+        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
         'audio': 'zabaha',
+        'image': None
+        },
+    'seks': {
+        'text': 'Şşşş,🤫🤫 bunu MZ'de konuşuyoruz. 🙂‍↔️',
+        'audio': None,
         'image': None
         }
 }
