@@ -43,8 +43,8 @@ AUTO_RESPONSES = {
         'audio': None,
         'image': None
     },
-    'yardım': {
-        'text': '❓ Size nasıl yardımcı olabilirim?',
+    'ay imdat': {
+        'text': 'AY NOLDU NOLDU!!!',
         'audio': None,
         'image': 'resim'  # IMAGE_FILES'daki key
     },
