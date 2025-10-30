@@ -48,6 +48,11 @@ AUTO_RESPONSES = {
         'audio': None,
         'image': 'resim'  # IMAGE_FILES'daki key
     }
+    'zabaha': {
+        'text': None,
+        'audio': 'zabaha', 
+        'image': 'resim'  # IMAGE_FILES'daki key
+    }
     # Daha fazla tetikleyici kelime ekleyebilirsiniz
 }
 
