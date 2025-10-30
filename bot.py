@@ -104,6 +104,19 @@ async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
     await update.message.reply_text(f"📚 Okunan Kitaplar:\n\n{message}")
 
+async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        if os.path.exists("kitaplar.json"):
+            with open("kitaplar.json", "rb") as f:
+                await update.message.reply_document(
+                    document=InputFile(f, filename="kitaplar.json"),
+                    caption="📚 İşte kayıtlı kitaplar dosyan!"
+                )
+        else:
+            await update.message.reply_text("Henüz kayıtlı bir kitap dosyası bulunamadı.")
+    except Exception as e:
+        await update.message.reply_text(f"Bir hata oluştu: {e}")
+
 async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
