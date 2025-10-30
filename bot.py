@@ -1,35 +1,38 @@
 import os
 import logging
+import requests
+from io import BytesIO
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-# Logging ayarları
+# --- Logging ayarları ---
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# Bot token'ınızı buraya yazın (veya environment variable olarak kullanın)
+# --- Bot token ---
 BOT_TOKEN = os.environ.get('BOT_TOKEN', 'BURAYA_BOT_TOKEN_YAZIŞTIRIN')
 
-# Ses dosyalarınızın GitHub raw URL'lerini buraya ekleyin
+# --- Ses dosyaları ---
 AUDIO_FILES = {
     'zabaha': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
     'zabah': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
-    # Daha fazla ses dosyası ekleyebilirsiniz
+    'iyi geceler': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
+    'ne zaman bitecek': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/zabaha-kadar.ogg',
 }
 
-# Görsel dosyalarınızın URL'lerini buraya ekleyin
+# --- Görsel dosyaları ---
 IMAGE_FILES = {
     'resim': 'https://raw.githubusercontent.com/KULLANICI_ADI/REPO_ADI/main/resimler/ornek.jpg',
 }
 
-# Otomatik yanıt kuralları
+# --- Otomatik yanıt kuralları ---
 AUTO_RESPONSES = {
     'merhaba': {
         'text': '👋 Merhaba! Nasılsın?',
-        'audio': 'merhaba',  # AUDIO_FILES'daki key
+        'audio': 'merhaba',
         'image': None
     },
     'günaydın': {
@@ -45,35 +48,31 @@ AUTO_RESPONSES = {
     'ay imdat': {
         'text': 'AY NOLDU NOLDU!!!',
         'audio': None,
-        'image': 'resim'  # IMAGE_FILES'daki key
+        'image': 'resim'
     },
     'zabaha': {
         'text': None,
-        'audio': 'zabaha', 
-        'image': None,
+        'audio': 'zabaha',
+        'image': 'resim'
     },
-     'zabah': {
+    'zabah': {
         'text': None,
         'audio': 'zabah',
-        'image': None,
+        'image': 'resim'
     }
-    # Daha fazla tetikleyici kelime ekleyebilirsiniz
 }
 
+# --- Mesaj işleyici ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Gelen mesajları kontrol et ve otomatik yanıt ver"""
-    
-    # Mesaj yoksa veya gruplarda değilse çık
     if not update.message or not update.message.text:
         return
     
     message_text = update.message.text.lower().strip()
     
-    # Her tetikleyici kelimeyi kontrol et
     for trigger, response in AUTO_RESPONSES.items():
         if trigger in message_text:
             try:
-                # Metin yanıtı gönder
+                # Metin gönder
                 if response['text']:
                     await update.message.reply_text(response['text'])
                 
@@ -82,39 +81,38 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     image_url = IMAGE_FILES[response['image']]
                     await update.message.reply_photo(photo=image_url)
                 
-                # Ses kaydı gönder
+                # Ses gönder
                 if response['audio'] and response['audio'] in AUDIO_FILES:
                     audio_url = AUDIO_FILES[response['audio']]
-                    await update.message.reply_voice(voice=audio_url)
+                    try:
+                        # Ses dosyasını indir
+                        response_data = requests.get(audio_url)
+                        response_data.raise_for_status()
+
+                        # BytesIO ile Telegram'a gönder
+                        audio_file = BytesIO(response_data.content)
+                        audio_file.name = "ses.ogg"
+                        await update.message.reply_voice(voice=audio_file)
+
+                    except Exception as e:
+                        logger.error(f"Ses gönderiminde hata: {e}")
                 
                 logger.info(f"'{trigger}' tetikleyicisine yanıt verildi")
-                break  # İlk eşleşmeden sonra dur
+                break
                 
             except Exception as e:
                 logger.error(f"Yanıt gönderilirken hata: {e}")
 
+# --- Hata yakalayıcı ---
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Hataları yakala ve logla"""
     logger.error(f"Hata oluştu: {context.error}")
 
+# --- Ana fonksiyon ---
 def main():
-    """Bot'u başlat"""
-    
-    # Application oluştur
     application = Application.builder().token(BOT_TOKEN).build()
-    
-    # Mesaj handler'ı ekle (tüm metin mesajlarını dinle)
-    application.add_handler(MessageHandler(
-        filters.TEXT & ~filters.COMMAND, 
-        handle_message
-    ))
-    
-    # Hata handler'ı ekle
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_error_handler(error_handler)
-    
     logger.info("Bot başlatılıyor...")
-    
-    # Bot'u başlat
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
