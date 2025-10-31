@@ -1,102 +1,58 @@
 import os
 import json
 import requests
+import logging
 from io import BytesIO
 from telegram import Update, InputFile
-from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
-import logging
-logging.basicConfig(level=logging.INFO)
-...
-logging.info("Veri başarıyla kaydedildi ✅")
+from telegram.ext import (
+    ApplicationBuilder,
+    MessageHandler,
+    CommandHandler,
+    filters,
+    ContextTypes
+)
 
-
-# --- BOT TOKEN ---
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-# --- KALICI DOSYA YOLU ---
-DATA_FILE = "/mnt/data/kitaplar.json"
-
-# --- VOLUME KLASÖRÜNÜ OLUŞTUR ---
-os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-
-# --- DOSYA YOKSA BOŞ OLUŞTUR ---
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump([], f, ensure_ascii=False, indent=4)
-
-
-# --- VERİ OKUMA / YAZMA FONKSİYONLARI ---
-
-import requests
-import os
-import json
-
-JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
-BIN_ID = os.getenv("BIN_ID") # JSONBin'de oluşturduğun bin’in ID'si
-
-headers = {
-    "Content-Type": "application/json; charset=utf-8",
-    "X-Master-Key": JSONBIN_API_KEY
-}
-import logging
+# --- LOG AYARLARI ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# --- ENV DEĞİŞKENLERİ ---
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
+JSONBIN_BIN_ID = os.getenv("JSONBIN_BIN_ID")
+
+# --- JSONBIN AYARLARI ---
+HEADERS = {
+    "Content-Type": "application/json",
+    "X-Master-Key": JSONBIN_API_KEY
+}
+
+
+# --- VERİ YÜKLEME ---
 def load_data():
-    """JSONBin'den kayıtları güvenli şekilde çeker. Hata varsa ayrıntılı log yazar."""
-    BIN_ID = os.getenv("BIN_ID")
-    JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
-
-    if not BIN_ID:
-        logger.error("BIN_ID environment variable yok!")
-        return []
-    if not JSONBIN_API_KEY:
-        logger.error("JSONBIN_API_KEY environment variable yok!")
-        return []
-
-    url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
-    headers = {
-        "X-Master-Key": JSONBIN_API_KEY,
-        "Accept": "application/json"
-    }
-
-    try:
-        logger.info(f"JSONBin isteği: {url} (timeout=6s)")
-        r = requests.get(url, headers=headers, timeout=6)
-        logger.info(f"JSONBin status: {r.status_code}")
-        if r.status_code == 200:
-            body = r.json()
-            # Güvenlik: record yoksa boş liste dön
-            record = body.get("record")
-            if isinstance(record, list):
-                logger.info(f"JSONBin'den {len(record)} kayıt çekildi.")
-                return record
-            else:
-                logger.warning("JSONBin'den gelen 'record' alanı liste değil; döküm: %s", type(record))
-                return []
-        else:
-            logger.error("JSONBin hata: %s", r.text)
+    url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}/latest"
+    res = requests.get(url, headers=HEADERS)
+    if res.status_code == 200:
+        try:
+            data = res.json().get("record", [])
+            logger.info(f"{len(data)} kayıt yüklendi ✅")
+            return data
+        except json.JSONDecodeError:
+            logger.error("JSON parse hatası: Yanıt çözümlenemedi.")
             return []
-    except requests.exceptions.Timeout:
-        logger.exception("JSONBin isteği timeout oldu.")
-        return []
-    except Exception:
-        logger.exception("JSONBin yüklemesi sırasında beklenmeyen hata oluştu.")
+    else:
+        logger.warning(f"JSONBin veri okunamadı: {res.status_code} - {res.text}")
         return []
 
 
+# --- VERİ KAYDETME ---
 def save_data(data):
-    """Kayıtları JSONBin'e kaydeder"""
-    try:
-        url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
-        res = requests.put(url, headers=headers, data=json.dumps(data, ensure_ascii=False))
-        if res.status_code == 200:
-            print("Veri başarıyla kaydedildi ✅")
-        else:
-            print("Kaydetme hatası:", res.text)
-    except Exception as e:
-        print("Kaydetme sırasında hata:", e)
-
+    url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}"
+    res = requests.put(url, headers=HEADERS, json=data)
+    if res.status_code == 200:
+        logger.info("Veri başarıyla kaydedildi ✅")
+    else:
+        logger.error(f"JSONBin kaydetme hatası: {res.status_code} - {res.text}")
 
 
 # --- MULTİMEDYA KAYNAKLARI ---
@@ -124,11 +80,13 @@ AUTO_RESPONSES = {
 
 
 # --- KOMUTLAR ---
+
 async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = " ".join(context.args)
     if not text:
         await update.message.reply_text("Kaydedilecek bir yazı girmelisin. Örnek:\n/save Kırmızı Pazartesi - Gabriel García Márquez")
         return
+
     data = load_data()
     data.append(text)
     save_data(data)
@@ -139,14 +97,13 @@ async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         data = load_data()
         if not data:
-            await update.message.reply_text("📭 Henüz kayıtlı kitap yok veya veri alınamadı. (Logs'a bakın)")
+            await update.message.reply_text("📭 Henüz kayıtlı kitap yok veya veri alınamadı.")
             return
         message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
         await update.message.reply_text(f"📚 Kayıtlı Kitaplar:\n\n{message}")
     except Exception as e:
         logger.exception("kitaplar_command hata")
         await update.message.reply_text(f"❌ Bir hata oluştu: {e}")
-
 
 
 async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -179,11 +136,13 @@ async def find_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not query:
         await update.message.reply_text("Aramak istediğin kelimeyi yazmalısın. Örnek:\n/find aşk")
         return
+
     data = load_data()
     results = [(i+1, item) for i, item in enumerate(data) if query in item.lower()]
     if not results:
         await update.message.reply_text(f"🔍 '{query}' kelimesini içeren kayıt bulunamadı.")
         return
+
     message = "\n".join([f"{i}. {item}" for i, item in results])
     await update.message.reply_text(f"🔍 Arama Sonuçları ({query}):\n\n{message}")
 
@@ -194,17 +153,14 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Henüz kayıtlı kitap yok 📭")
         return
     
-    # JSONBin'deki veriyi geçici bir dosyaya yaz
     temp_path = "/tmp/kitaplar.json"
     with open(temp_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-    # Telegram’a gönder
     await update.message.reply_document(
         document=InputFile(temp_path, filename="kitaplar.json"),
         caption="📦 Kayıtlı kitaplar dosyası gönderildi!"
     )
-
 
 
 async def edit_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -270,7 +226,7 @@ def main():
     app.add_handler(CommandHandler("edit", edit_entry))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("🤖 Bot çalışıyor...")
+    logger.info("🤖 Bot çalışıyor...")
     app.run_polling()
 
 
