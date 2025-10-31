@@ -92,7 +92,7 @@ AUDIO_FILES = {
 }
 
 IMAGE_FILES = {
-    'resim': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/resimler/yardim.jpg'
+    'kader': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/resimler/Belgin_Sarılmışer.jpg'
 }
 
 
@@ -105,7 +105,7 @@ AUTO_RESPONSES = {
     'zabah': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': 'zabaha', 'image': None},
     'iyi geceler': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': None, 'image': None},
     'seks': {'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️', 'audio': None, 'image': None},
-    'kader': {'text': 'Kader diyemezsin, sen kendin ettin.', 'audio': None, 'image': None},
+    'kader': {'text': 'Kader diyemezsin, sen kendin ettin.', 'audio': None, 'image': 'kader'},
 }
 
 
