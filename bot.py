@@ -4,6 +4,11 @@ import requests
 from io import BytesIO
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
+import logging
+logging.basicConfig(level=logging.INFO)
+...
+logging.info("Veri başarıyla kaydedildi ✅")
+
 
 # --- BOT TOKEN ---
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -30,7 +35,7 @@ JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
 BIN_ID = os.getenv("BIN_ID") # JSONBin'de oluşturduğun bin’in ID'si
 
 headers = {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json; charset=utf-8",
     "X-Master-Key": JSONBIN_API_KEY
 }
 
@@ -152,9 +157,18 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not data:
         await update.message.reply_text("Henüz kayıtlı kitap yok 📭")
         return
-    with open(DATA_FILE, "rb") as f:
-        await update.message.reply_document(document=InputFile(f, filename="kitaplar.json"))
-    await update.message.reply_text("📦 Kayıtlı kitaplar dosyası gönderildi!")
+    
+    # JSONBin'deki veriyi geçici bir dosyaya yaz
+    temp_path = "/tmp/kitaplar.json"
+    with open(temp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    # Telegram’a gönder
+    await update.message.reply_document(
+        document=InputFile(temp_path, filename="kitaplar.json"),
+        caption="📦 Kayıtlı kitaplar dosyası gönderildi!"
+    )
+
 
 
 async def edit_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
