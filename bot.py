@@ -342,7 +342,7 @@ def main():
     app.add_handler(CommandHandler("export", export_command))
     app.add_handler(CommandHandler("edit", edit_entry))
     app.add_handler(CommandHandler("test", test_command))
-    app.add_handler(CommandHandler("tokat", tokat_command))  # 👈 BURAYA EKLE
+    app.add_handler(CommandHandler("tokat", tokat_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("🤖 Bot çalışıyor...")
