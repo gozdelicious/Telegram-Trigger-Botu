@@ -109,6 +109,26 @@ AUTO_RESPONSES = {
 
 
 # --- KOMUTLAR ---
+async def test_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Environment ve API bağlantısını test et"""
+    msg = "🔍 **Sistem Kontrolü:**\n\n"
+    msg += f"✅ Bot Token: {'Var' if BOT_TOKEN else '❌ YOK'}\n"
+    msg += f"✅ API Key: {'Var' if JSONBIN_API_KEY else '❌ YOK'}\n"
+    msg += f"✅ Bin ID: {'Var' if JSONBIN_BIN_ID else '❌ YOK'}\n\n"
+    
+    # JSONBin bağlantı testi
+    url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}/latest"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=5)
+        msg += f"📡 JSONBin Yanıt: {res.status_code}\n"
+        if res.status_code == 401:
+            msg += "❌ API Key geçersiz!\n"
+        elif res.status_code == 200:
+            msg += "✅ Bağlantı başarılı!\n"
+    except Exception as e:
+        msg += f"❌ Bağlantı hatası: {e}\n"
+    
+    await update.message.reply_text(msg, parse_mode="Markdown")
 
 async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = " ".join(context.args)
@@ -261,6 +281,7 @@ def main():
     app.add_handler(CommandHandler("export", export_command))
     app.add_handler(CommandHandler("edit", edit_entry))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(CommandHandler("test", test_command))
 
     logger.info("🤖 Bot çalışıyor...")
     app.run_polling()
