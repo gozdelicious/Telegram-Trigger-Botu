@@ -112,6 +112,20 @@ AUTO_RESPONSES = {
 
 
 # --- KOMUTLAR ---
+
+async def tokat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Bir kullanıcıya tokat atar 😤"""
+    if not context.args:
+        await update.message.reply_text("Kime tokat atacağımı söylemeden tokat atamam 😏 /tokat @kisi")
+        return
+
+    mention = context.args[0]
+    if not mention.startswith("@"):
+        mention = f"@{mention}"
+
+    cevap = f"{mention} Bugün biraz kendine gel artık 😤"
+    await update.message.reply_text(cevap)
+
 async def test_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Environment ve API bağlantısını test et"""
     msg = "🔍 **Sistem Kontrolü:**\n\n"
@@ -316,11 +330,13 @@ def main():
     app.add_handler(CommandHandler("find", find_command))
     app.add_handler(CommandHandler("export", export_command))
     app.add_handler(CommandHandler("edit", edit_entry))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_handler(CommandHandler("test", test_command))
+    app.add_handler(CommandHandler("tokat", tokat_command))  # 👈 BURAYA EKLE
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("🤖 Bot çalışıyor...")
     app.run_polling()
+
 
 
 if __name__ == "__main__":
