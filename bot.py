@@ -5,17 +5,22 @@ from io import BytesIO
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 
-# Kalıcı veri dosyası (Railway Volume)
+# --- BOT TOKEN ---
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# --- KALICI DOSYA YOLU ---
 DATA_FILE = "/mnt/data/kitaplar.json"
 
-# Volume dizinini oluştur
+# --- VOLUME KLASÖRÜNÜ OLUŞTUR ---
 os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
 
-# Dosya yoksa oluştur
+# --- DOSYA YOKSA BOŞ OLUŞTUR ---
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump([], f, ensure_ascii=False, indent=4)
 
+
+# --- VERİ OKUMA / YAZMA FONKSİYONLARI ---
 def load_data():
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -23,13 +28,13 @@ def load_data():
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
+
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
+# --- MULTİMEDYA KAYNAKLARI ---
 AUDIO_FILES = {
     'merhaba': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/merhaba.ogg',
     'günaydın': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/sesler/gunaydin.ogg',
@@ -40,81 +45,20 @@ IMAGE_FILES = {
     'resim': 'https://raw.githubusercontent.com/gozdelicious/Telegram-Trigger-Botu/main/resimler/yardim.jpg'
 }
 
+
+# --- OTOMATİK CEVAPLAR ---
 AUTO_RESPONSES = {
-    'merhaba': {
-        'text': '👋 MERHABA! Ay heyecanlandım. İlk merhaba diyen ben olmalıyım. HER ZAMAN!',
-        'audio': None,
-        'image': None
-    },
-    'günaydın': {
-        'text': '🌅 Günaydın! Güzel bir gün olsun!',
-        'audio': None,
-        'image': None
-    },
-    'selam': {
-        'text': '✨ Selam cnms! Hoş geldin!',
-        'audio': None,
-        'image': None
-    },
-    'imdat': {
-        'text': 'AY NOLUYO NOLUYOOO 😱😱😱',
-        'audio': None,
-        'image': 'resim'
-    },
-    'zabah': {
-        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
-        'audio': 'zabaha',
-        'image': None
-    },
-    'iyi geceler': {
-        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
-        'audio': None,
-        'image': None
-    },
-    'seks': {
-        'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️',
-        'audio': None,
-        'image': None
-    }
+    'merhaba': {'text': '👋 MERHABA! Ay heyecanlandım. İlk merhaba diyen ben olmalıyım. HER ZAMAN!', 'audio': None, 'image': None},
+    'günaydın': {'text': '🌅 Günaydın! Güzel bir gün olsun!', 'audio': None, 'image': None},
+    'selam': {'text': '✨ Selam cnms! Hoş geldin!', 'audio': None, 'image': None},
+    'imdat': {'text': 'AY NOLUYO NOLUYOOO 😱😱😱', 'audio': None, 'image': 'resim'},
+    'zabah': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': 'zabaha', 'image': None},
+    'iyi geceler': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': None, 'image': None},
+    'seks': {'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️', 'audio': None, 'image': None}
 }
-
-# --- KİTAP DOSYASI ---
-import os
-import json
-
-DATA_FILE = "/mnt/data/kitaplar.json"
-
-# Eğer volume dizini yoksa oluştur
-os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-
-# Eğer kitaplar.json yoksa boş bir dosya oluştur
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump([], f, ensure_ascii=False, indent=4)
-
-
-def load_data():
-    """Kaydedilmiş kitapları yükler"""
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            return []
-    return []
-
-
-def save_data(data):
-    """Yeni kitap listesini diske kaydeder"""
-    try:
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Dosya kaydedilirken hata oluştu: {e}")
 
 
 # --- KOMUTLAR ---
-
 async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = " ".join(context.args)
     if not text:
@@ -125,6 +69,7 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     save_data(data)
     await update.message.reply_text(f"✅ Kitap kaydedildi!\n📝 {text}")
 
+
 async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
     if not data:
@@ -133,11 +78,13 @@ async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
     await update.message.reply_text(f"📚 Kayıtlı Kitaplar:\n\n{message}")
 
+
 async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
         await update.message.reply_text("Silmek istediğin kayıt numaralarını yazmalısın. Örnek:\n/delete 1 3 5")
         return
+
     data = load_data()
     to_delete = []
     for arg in args:
@@ -145,14 +92,17 @@ async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             index = int(arg) - 1
             if 0 <= index < len(data):
                 to_delete.append(index)
+
     if not to_delete:
         await update.message.reply_text("⚠️ Geçerli bir numara bulunamadı.")
         return
+
     to_delete.sort(reverse=True)
     deleted_items = [data.pop(i) for i in to_delete]
     save_data(data)
     deleted_text = "\n".join([f"- {item}" for item in deleted_items])
     await update.message.reply_text(f"🗑️ Silinen Kayıtlar:\n{deleted_text}")
+
 
 async def find_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = " ".join(context.args).strip().lower()
@@ -167,6 +117,7 @@ async def find_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = "\n".join([f"{i}. {item}" for i, item in results])
     await update.message.reply_text(f"🔍 Arama Sonuçları ({query}):\n\n{message}")
 
+
 async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
     if not data:
@@ -176,19 +127,15 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_document(document=InputFile(f, filename="kitaplar.json"))
     await update.message.reply_text("📦 Kayıtlı kitaplar dosyası gönderildi!")
 
-from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
 
-# --- /edit komutu ---
 async def edit_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
-
     if len(args) < 2:
         await update.message.reply_text("❗Kullanım: /edit <id> <yeni_yazı>")
         return
 
     try:
-        entry_id = int(args[0]) - 1  # 1 tabanlı index yerine 0 tabanlı yapıyoruz
+        entry_id = int(args[0]) - 1
     except ValueError:
         await update.message.reply_text("⚠️ Geçerli bir sayı gir lütfen. (örnek: /edit 2 Yeni metin)")
         return
@@ -217,7 +164,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if trigger in text:
             if response['text']:
                 await update.message.reply_text(response['text'])
-
             if response['audio']:
                 audio_url = AUDIO_FILES.get(response['audio'])
                 if audio_url:
@@ -226,12 +172,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         await update.message.reply_voice(
                             voice=InputFile(BytesIO(resp.content), filename=f"{response['audio']}.ogg")
                         )
-
             if response['image']:
                 image_url = IMAGE_FILES.get(response['image'])
                 if image_url:
                     await update.message.reply_photo(photo=image_url)
             break
+
 
 # --- ANA FONKSİYON ---
 def main():
@@ -242,11 +188,12 @@ def main():
     app.add_handler(CommandHandler("delete", delete_command))
     app.add_handler(CommandHandler("find", find_command))
     app.add_handler(CommandHandler("export", export_command))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_handler(CommandHandler("edit", edit_entry))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("🤖 Bot çalışıyor...")
     app.run_polling()
+
 
 if __name__ == "__main__":
     main()
