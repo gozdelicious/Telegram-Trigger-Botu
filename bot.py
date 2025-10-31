@@ -16,10 +16,22 @@ from telegram.ext import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # --- ENV DEĞİŞKENLERİ ---
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
-JSONBIN_BIN_ID = os.getenv("JSONBIN_BIN_ID")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
+JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY", "").strip()
+JSONBIN_BIN_ID = os.getenv("JSONBIN_BIN_ID", "").strip()
+
+# Başlangıçta kontrol et
+if not all([BOT_TOKEN, JSONBIN_API_KEY, JSONBIN_BIN_ID]):
+    logger.error("❌ HATALI YAPILANDIRMA!")
+    logger.error(f"BOT_TOKEN: {'✅ Var' if BOT_TOKEN else '❌ Yok'}")
+    logger.error(f"JSONBIN_API_KEY: {'✅ Var' if JSONBIN_API_KEY else '❌ Yok'}")
+    logger.error(f"JSONBIN_BIN_ID: {'✅ Var' if JSONBIN_BIN_ID else '❌ Yok'}")
+    exit(1)
+
+logger.info(f"✅ API Key başlangıcı: {JSONBIN_API_KEY[:10]}...")
+logger.info(f"✅ Bin ID: {JSONBIN_BIN_ID}")
 
 # --- JSONBIN AYARLARI ---
 HEADERS = {
