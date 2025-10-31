@@ -5,6 +5,29 @@ from io import BytesIO
 from telegram import Update, InputFile
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 
+# Kalıcı veri dosyası (Railway Volume)
+DATA_FILE = "/mnt/data/kitaplar.json"
+
+# Volume dizinini oluştur
+os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+
+# Dosya yoksa oluştur
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False, indent=4)
+
+def load_data():
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 AUDIO_FILES = {
