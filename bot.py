@@ -38,21 +38,52 @@ headers = {
     "Content-Type": "application/json; charset=utf-8",
     "X-Master-Key": JSONBIN_API_KEY
 }
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def load_data():
-    """JSONBin'den kayıtları çeker"""
-    try:
-        url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
-        res = requests.get(url, headers=headers)
-        if res.status_code == 200:
-            record = res.json()
-            return record["record"]
-        else:
-            print("JSONBin'den veri alınamadı:", res.text)
-            return []
-    except Exception as e:
-        print("Yükleme hatası:", e)
+    """JSONBin'den kayıtları güvenli şekilde çeker. Hata varsa ayrıntılı log yazar."""
+    BIN_ID = os.getenv("BIN_ID")
+    JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
+
+    if not BIN_ID:
+        logger.error("BIN_ID environment variable yok!")
         return []
+    if not JSONBIN_API_KEY:
+        logger.error("JSONBIN_API_KEY environment variable yok!")
+        return []
+
+    url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
+    headers = {
+        "X-Master-Key": JSONBIN_API_KEY,
+        "Accept": "application/json"
+    }
+
+    try:
+        logger.info(f"JSONBin isteği: {url} (timeout=6s)")
+        r = requests.get(url, headers=headers, timeout=6)
+        logger.info(f"JSONBin status: {r.status_code}")
+        if r.status_code == 200:
+            body = r.json()
+            # Güvenlik: record yoksa boş liste dön
+            record = body.get("record")
+            if isinstance(record, list):
+                logger.info(f"JSONBin'den {len(record)} kayıt çekildi.")
+                return record
+            else:
+                logger.warning("JSONBin'den gelen 'record' alanı liste değil; döküm: %s", type(record))
+                return []
+        else:
+            logger.error("JSONBin hata: %s", r.text)
+            return []
+    except requests.exceptions.Timeout:
+        logger.exception("JSONBin isteği timeout oldu.")
+        return []
+    except Exception:
+        logger.exception("JSONBin yüklemesi sırasında beklenmeyen hata oluştu.")
+        return []
+
 
 def save_data(data):
     """Kayıtları JSONBin'e kaydeder"""
@@ -105,12 +136,17 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    data = load_data()
-    if not data:
-        await update.message.reply_text("Henüz kayıtlı kitap yok 📭")
-        return
-    message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
-    await update.message.reply_text(f"📚 Kayıtlı Kitaplar:\n\n{message}")
+    try:
+        data = load_data()
+        if not data:
+            await update.message.reply_text("📭 Henüz kayıtlı kitap yok veya veri alınamadı. (Logs'a bakın)")
+            return
+        message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
+        await update.message.reply_text(f"📚 Kayıtlı Kitaplar:\n\n{message}")
+    except Exception as e:
+        logger.exception("kitaplar_command hata")
+        await update.message.reply_text(f"❌ Bir hata oluştu: {e}")
+
 
 
 async def delete_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
