@@ -28,20 +28,37 @@ HEADERS = {
 }
 
 
-# --- VERİ YÜKLEME ---
+# --- VERİ YÜKLEME (GELİŞTİRİLMİŞ) ---
 def load_data():
     url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}/latest"
-    res = requests.get(url, headers=HEADERS)
-    if res.status_code == 200:
-        try:
-            data = res.json().get("record", [])
-            logger.info(f"{len(data)} kayıt yüklendi ✅")
-            return data
-        except json.JSONDecodeError:
-            logger.error("JSON parse hatası: Yanıt çözümlenemedi.")
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        logger.info(f"JSONBin yanıt kodu: {res.status_code}")
+        
+        if res.status_code == 200:
+            try:
+                full_response = res.json()
+                logger.info(f"Gelen yanıt: {full_response}")
+                
+                data = full_response.get("record", [])
+                
+                # Eğer record bir liste değilse (örneğin dict ise), boş liste döndür
+                if not isinstance(data, list):
+                    logger.warning(f"Record bir liste değil, tip: {type(data)}")
+                    return []
+                
+                logger.info(f"{len(data)} kayıt yüklendi ✅")
+                return data
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON parse hatası: {e}")
+                logger.error(f"Yanıt içeriği: {res.text}")
+                return []
+        else:
+            logger.warning(f"JSONBin veri okunamadı: {res.status_code}")
+            logger.warning(f"Yanıt: {res.text}")
             return []
-    else:
-        logger.warning(f"JSONBin veri okunamadı: {res.status_code} - {res.text}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"İstek hatası: {e}")
         return []
 
 
@@ -95,10 +112,17 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def kitaplar_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
+        logger.info("kitaplar_command çağrıldı")
         data = load_data()
+        
+        logger.info(f"Yüklenen veri: {data}")
+        logger.info(f"Veri tipi: {type(data)}")
+        logger.info(f"Veri uzunluğu: {len(data) if isinstance(data, list) else 'Liste değil'}")
+        
         if not data:
             await update.message.reply_text("📭 Henüz kayıtlı kitap yok veya veri alınamadı.")
             return
+            
         message = "\n".join([f"{i+1}. {item}" for i, item in enumerate(data)])
         await update.message.reply_text(f"📚 Kayıtlı Kitaplar:\n\n{message}")
     except Exception as e:
