@@ -133,9 +133,13 @@ async def tokat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Sen bunu biraz hak ettin gibi... 💅",
         "Osmanlı tokadı geldi!",
         "Tokadı yapıştırdım, şimdi düşün bakalım neden 😌",
-        "Bir daha öyle deme @... 🙄",
+        "Bir daha öyle deme 🙄",
         "Karma'nın tokadı gibi bu da aniden geldi 💥"
     ]
+
+    secilen_soz = random.choice(tokat_sozleri)
+    await update.message.reply_text(f"{mention} {secilen_soz}")
+
 
 async def test_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Environment ve API bağlantısını test et"""
