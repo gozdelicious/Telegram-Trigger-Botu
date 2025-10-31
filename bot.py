@@ -56,7 +56,7 @@ AUTO_RESPONSES = {
 }
 
 # --- KİTAP DOSYASI ---
-DATA_FILE = "kitaplar.json"
+DATA_FILE = "/mnt/data/kitaplar.json"
 
 def load_data():
     if os.path.exists(DATA_FILE):
