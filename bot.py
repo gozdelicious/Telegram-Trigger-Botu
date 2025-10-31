@@ -21,17 +21,46 @@ if not os.path.exists(DATA_FILE):
 
 
 # --- VERİ OKUMA / YAZMA FONKSİYONLARI ---
+
+import requests
+import os
+import json
+
+JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
+BIN_ID = "BURAYA_JSONBIN_ID_YAZ"  # JSONBin'de oluşturduğun bin’in ID'si
+
+headers = {
+    "Content-Type": "application/json",
+    "X-Master-Key": JSONBIN_API_KEY
+}
+
 def load_data():
+    """JSONBin'den kayıtları çeker"""
     try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+        url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
+        res = requests.get(url, headers=headers)
+        if res.status_code == 200:
+            record = res.json()
+            return record["record"]
+        else:
+            print("JSONBin'den veri alınamadı:", res.text)
+            return []
+    except Exception as e:
+        print("Yükleme hatası:", e)
         return []
 
-
 def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    """Kayıtları JSONBin'e kaydeder"""
+    try:
+        url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
+        res = requests.put(url, headers=headers, data=json.dumps(data, ensure_ascii=False))
+        if res.status_code == 200:
+            print("Veri başarıyla kaydedildi ✅")
+        else:
+            print("Kaydetme hatası:", res.text)
+    except Exception as e:
+        print("Kaydetme sırasında hata:", e)
+
 
 
 # --- MULTİMEDYA KAYNAKLARI ---
