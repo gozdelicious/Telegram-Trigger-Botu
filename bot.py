@@ -254,21 +254,38 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for trigger, response in AUTO_RESPONSES.items():
         if trigger in text:
-            if response['text']:
-                await update.message.reply_text(response['text'])
-            if response['audio']:
-                audio_url = AUDIO_FILES.get(response['audio'])
-                if audio_url:
-                    resp = requests.get(audio_url)
-                    if resp.status_code == 200:
-                        await update.message.reply_voice(
-                            voice=InputFile(BytesIO(resp.content), filename=f"{response['audio']}.ogg")
-                        )
+            # Görsel varsa ve altına yazı eklenecekse
             if response['image']:
                 image_url = IMAGE_FILES.get(response['image'])
                 if image_url:
-                    await update.message.reply_photo(photo=image_url)
-            break
+                    # Eğer text de varsa caption olarak gönder
+                    caption = response['text'] if response['text'] else None
+                    await update.message.reply_photo(photo=image_url, caption=caption)
+                    # Ek olarak ses varsa gönderelim
+                    if response['audio']:
+                        audio_url = AUDIO_FILES.get(response['audio'])
+                        if audio_url:
+                            resp = requests.get(audio_url)
+                            if resp.status_code == 200:
+                                await update.message.reply_voice(
+                                    voice=InputFile(BytesIO(resp.content), filename=f"{response['audio']}.ogg")
+                                )
+                    break
+
+            # Görsel yoksa sadece metin (ve varsa ses)
+            else:
+                if response['text']:
+                    await update.message.reply_text(response['text'])
+                if response['audio']:
+                    audio_url = AUDIO_FILES.get(response['audio'])
+                    if audio_url:
+                        resp = requests.get(audio_url)
+                        if resp.status_code == 200:
+                            await update.message.reply_voice(
+                                voice=InputFile(BytesIO(resp.content), filename=f"{response['audio']}.ogg")
+                            )
+                break
+
 
 
 # --- ANA FONKSİYON ---
