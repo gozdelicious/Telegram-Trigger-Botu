@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import logging
+import random
 from io import BytesIO
 from telegram import Update, InputFile
 from telegram.ext import (
@@ -115,6 +116,8 @@ AUTO_RESPONSES = {
 
 async def tokat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Bir kullanıcıya tokat atar 😤"""
+
+    # Etiket kontrolü
     if not context.args:
         await update.message.reply_text("Kime tokat atacağımı söylemeden tokat atamam 😏 /tokat @kisi")
         return
@@ -123,8 +126,16 @@ async def tokat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not mention.startswith("@"):
         mention = f"@{mention}"
 
-    cevap = f"{mention} Bugün biraz kendine gel artık 😤"
-    await update.message.reply_text(cevap)
+    # 🔀 Rastgele tokat cümleleri
+    tokat_sozleri = [
+        "Bugün biraz kendine gel artık 😤",
+        "Bu tokat sabırla birikmişti 😏",
+        "Sen bunu biraz hak ettin gibi... 💅",
+        "Osmanlı tokadı geldi!",
+        "Tokadı yapıştırdım, şimdi düşün bakalım neden 😌",
+        "Bir daha öyle deme @... 🙄",
+        "Karma'nın tokadı gibi bu da aniden geldi 💥"
+    ]
 
 async def test_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Environment ve API bağlantısını test et"""
