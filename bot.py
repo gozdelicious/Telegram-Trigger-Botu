@@ -153,6 +153,38 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_document(document=InputFile(f, filename="kitaplar.json"))
     await update.message.reply_text("📦 Kayıtlı kitaplar dosyası gönderildi!")
 
+from telegram import Update
+from telegram.ext import CommandHandler, ContextTypes
+
+# --- /edit komutu ---
+async def edit_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    args = context.args
+
+    if len(args) < 2:
+        await update.message.reply_text("❗Kullanım: /edit <id> <yeni_yazı>")
+        return
+
+    try:
+        entry_id = int(args[0]) - 1  # 1 tabanlı index yerine 0 tabanlı yapıyoruz
+    except ValueError:
+        await update.message.reply_text("⚠️ Geçerli bir sayı gir lütfen. (örnek: /edit 2 Yeni metin)")
+        return
+
+    new_text = " ".join(args[1:])
+    data = load_data()
+
+    if 0 <= entry_id < len(data):
+        old_text = data[entry_id]
+        data[entry_id] = new_text
+        save_data(data)
+        await update.message.reply_text(
+            f"✏️ **Düzenlendi:**\n\nEski: {old_text}\nYeni: {new_text}",
+            parse_mode="Markdown"
+        )
+    else:
+        await update.message.reply_text("❌ Bu numarada bir kayıt bulunamadı.")
+
+
 # --- MESAJ İŞLEYİCİ ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
@@ -188,6 +220,7 @@ def main():
     app.add_handler(CommandHandler("find", find_command))
     app.add_handler(CommandHandler("export", export_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(CommandHandler("edit", edit_entry))
 
     print("🤖 Bot çalışıyor...")
     app.run_polling()
