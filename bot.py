@@ -27,7 +27,7 @@ import os
 import json
 
 JSONBIN_API_KEY = os.getenv("JSONBIN_API_KEY")
-BIN_ID = "690488f8ae596e708f39ebdb"  # JSONBin'de oluşturduğun bin’in ID'si
+BIN_ID = os.getenv("BIN_ID") # JSONBin'de oluşturduğun bin’in ID'si
 
 headers = {
     "Content-Type": "application/json",
