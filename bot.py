@@ -107,6 +107,7 @@ AUTO_RESPONSES = {
     'seks': {'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️', 'audio': None, 'image': None},
     'kader': {'text': 'Kader diyemezsin, sen kendin ettin.', 'audio': None, 'image': 'kader'},
     'İyi geceler': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': None, 'image': None},
+    'görüşürüz': {'text': 'Ciao 👋', 'audio': None, 'image': None},
 }
 
 
