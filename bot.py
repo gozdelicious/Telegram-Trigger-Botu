@@ -99,17 +99,55 @@ IMAGE_FILES = {
 
 # --- OTOMATİK CEVAPLAR ---
 AUTO_RESPONSES = {
-    'merhaba': {'text': '👋 MERHABA! Ay heyecanlandım. İlk merhaba diyen ben olmalıyım. HER ZAMAN!', 'audio': None, 'image': None},
-    'gunaydin': {'text': '🌅 Günaydın! Güzel bir gün olsun!', 'audio': None, 'image': None},
-    'selam': {'text': '✨ Selam cnms! Hoş geldin!', 'audio': None, 'image': None},
-    'imdat': {'text': 'AY NOLUYO NOLUYOOO 😱😱😱', 'audio': None, 'image': None},
-    'zabah': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': 'zabaha', 'image': None},
-    'iyi geceler': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': None, 'image': None},
-    'seks': {'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️', 'audio': None, 'image': None},
-    'kader': {'text': 'Kader diyemezsin, sen kendin ettin.', 'audio': None, 'image': 'kader'},
-    'İyi geceler': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': None, 'image': None},
-    'görüşürüz': {'text': 'Ciao 👋', 'audio': None, 'image': None},
-    {
+    'merhaba': {
+        'text': '👋 MERHABA! Ay heyecanlandım. İlk merhaba diyen ben olmalıyım. HER ZAMAN!',
+        'audio': None,
+        'image': None
+    },
+
+    'selam': {
+        'text': '✨ Selam cnms! Hoş geldin!',
+        'audio': None,
+        'image': None
+    },
+
+    'imdat': {
+        'text': 'AY NOLUYO NOLUYOOO 😱😱😱',
+        'audio': None,
+        'image': None
+    },
+
+    'zabah': {
+        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
+        'audio': 'zabaha',
+        'image': None
+    },
+
+    'iyi geceler': {
+        'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!',
+        'audio': None,
+        'image': None
+    },
+
+    'seks': {
+        'text': 'Şşşş,🤫🤫 bunu MZ\'de konuşuyoruz. 🙂‍↔️',
+        'audio': None,
+        'image': None
+    },
+
+    'kader': {
+        'text': 'Kader diyemezsin, sen kendin ettin.',
+        'audio': None,
+        'image': 'kader'
+    },
+
+    'görüşürüz': {
+        'text': 'Ciao 👋',
+        'audio': None,
+        'image': None
+    },
+
+    # RANDOM destekli günaydın
     'günaydın': {
         'texts': [
             "Günaydın! Bugün güzel şeyler seninle olsun 🌼",
@@ -122,9 +160,8 @@ AUTO_RESPONSES = {
             "Günaydın, bugün kendine biraz daha iyi davran olur mu? 🌸",
             "Günaydın! Şarjım senden daha yüksek bu sabah ⚡️😌",
         ],
-        'image': None,
         'audio': None,
-        'sticker': None
+        'image': None
     },
 }
 
@@ -347,20 +384,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
         return
 
-   # --- SADECE METİN --- (random destekli)
-if not response.get('image') and not response.get('audio'):
+    # --- SADECE METİN ---
+    if not response.get('image') and not response.get('audio'):
 
-    # RANDOM TEXT desteği (örneğin "günaydın" trigger'ı)
-    if "texts" in response and response["texts"]:
-        metin = random.choice(response["texts"])
-        await update.message.reply_text(metin)
-        return
+        # RANDOM TEXT desteği
+        if "texts" in response and response["texts"]:
+            metin = random.choice(response["texts"])
+            await update.message.reply_text(metin)
+            return
 
-    # Normal tek metin cevabı
-    if response.get('text'):
-        await update.message.reply_text(response['text'])
-        return
-
+        # Normal tek metin
+        if response.get('text'):
+            await update.message.reply_text(response['text'])
+            return
+            
 # --- ANA FONKSİYON ---
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
