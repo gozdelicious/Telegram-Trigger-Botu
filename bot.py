@@ -109,6 +109,23 @@ AUTO_RESPONSES = {
     'kader': {'text': 'Kader diyemezsin, sen kendin ettin.', 'audio': None, 'image': 'kader'},
     'İyi geceler': {'text': 'NEREYE? ZABAĞA GADAR BURDAYIZ BUGÜN!', 'audio': None, 'image': None},
     'görüşürüz': {'text': 'Ciao 👋', 'audio': None, 'image': None},
+    {
+    'günaydın': {
+        'texts': [
+            "Günaydın! Bugün güzel şeyler seninle olsun 🌼",
+            "Günaydın şekerim, kalk bakalım dünyayı kurtaracağız 😌✨",
+            "Günaydın! Güneş bile senden utanıyor şu an parlamaya 😎☀️",
+            "Günaydın, kahveni koydum gel ☕️",
+            "Günaydın! Bugün yumuşak bir gün olsun 💛",
+            "Günaydın… Yine mi uyandık? Off… 🙄",
+            "Günaydın! Alarmı 48 kere ertelediğini biliyorum 😏⏰",
+            "Günaydın, bugün kendine biraz daha iyi davran olur mu? 🌸",
+            "Günaydın! Şarjım senden daha yüksek bu sabah ⚡️😌",
+        ],
+        'image': None,
+        'audio': None,
+        'sticker': None
+    },
 }
 
 
@@ -330,10 +347,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
         return
 
-    # --- SADECE METİN ---
-    if response.get('text') and not response.get('image') and not response.get('audio'):
-        await update.message.reply_text(response['text'])
+   # --- SADECE METİN --- (random destekli)
+if not response.get('image') and not response.get('audio'):
 
+    # RANDOM TEXT desteği (örneğin "günaydın" trigger'ı)
+    if "texts" in response and response["texts"]:
+        metin = random.choice(response["texts"])
+        await update.message.reply_text(metin)
+        return
+
+    # Normal tek metin cevabı
+    if response.get('text'):
+        await update.message.reply_text(response['text'])
+        return
 
 # --- ANA FONKSİYON ---
 def main():
