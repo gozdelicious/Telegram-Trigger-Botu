@@ -80,7 +80,7 @@ def load_data():
 # --- VERİ KAYDETME ---
 def save_data(data):
     url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}"
-    res = requests.put(url, headers=HEADERS, json=data)
+   res = requests.put(url, headers=HEADERS, json={"data": data})
     if res.status_code == 200:
         logger.info("Veri başarıyla kaydedildi ✅")
     else:
