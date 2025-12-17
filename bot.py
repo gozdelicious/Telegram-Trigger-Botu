@@ -172,20 +172,33 @@ AUTO_RESPONSES = {
 
 async def apitest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """JSONBin API'yi doğrudan test et"""
-    # Önce basit bir bins listesi isteği yapalım
-    list_url = "https://api.jsonbin.io/v3/b"
+    # Direkt bin'e erişmeyi deneyelim
+    test_url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}"
     headers = {
-        "X-Master-Key": JSONBIN_API_KEY
+        "X-Master-Key": JSONBIN_API_KEY,
+        "Content-Type": "application/json"
     }
     
     try:
-        res = requests.get(list_url, headers=headers, timeout=10)
-        await update.message.reply_text(
-            f"📡 **API Test:**\n\n"
-            f"Status: {res.status_code}\n"
-            f"Yanıt: ```\n{res.text[:300]}\n```",
-            parse_mode="Markdown"
-        )
+        # Önce okuma isteği
+        res_read = requests.get(f"{test_url}/latest", headers=headers, timeout=10)
+        
+        msg = f"📡 **API Okuma Testi:**\n\n"
+        msg += f"Status: {res_read.status_code}\n"
+        msg += f"Yanıt: ```\n{res_read.text[:400]}\n```\n\n"
+        
+        # Eğer 401 ise, belki de X-Access-Key kullanmalıyız
+        if res_read.status_code == 401:
+            headers2 = {
+                "X-Access-Key": JSONBIN_API_KEY,
+                "Content-Type": "application/json"
+            }
+            res_read2 = requests.get(f"{test_url}/latest", headers=headers2, timeout=10)
+            msg += f"**X-Access-Key ile deneme:**\n"
+            msg += f"Status: {res_read2.status_code}\n"
+            msg += f"Yanıt: ```\n{res_read2.text[:400]}\n```"
+        
+        await update.message.reply_text(msg, parse_mode="Markdown")
     except Exception as e:
         await update.message.reply_text(f"❌ Hata: {e}")
         
