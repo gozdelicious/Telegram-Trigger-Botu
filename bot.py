@@ -399,13 +399,28 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if response.get('text'):
             await update.message.reply_text(response['text'])
             return
-            
+
+async def debug_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """JSONBin'den gelen ham veriyi göster"""
+    url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}/latest"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        await update.message.reply_text(
+            f"📊 **Debug Bilgisi:**\n\n"
+            f"Status Code: {res.status_code}\n"
+            f"Ham Yanıt:\n```\n{res.text[:500]}\n```",
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        await update.message.reply_text(f"❌ Hata: {e}")
+
 # --- ANA FONKSİYON ---
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("save", save_command))
     app.add_handler(CommandHandler("kitaplar", kitaplar_command))
+    app.add_handler(CommandHandler("debug", debug_command))
     app.add_handler(CommandHandler("delete", delete_command))
     app.add_handler(CommandHandler("find", find_command))
     app.add_handler(CommandHandler("export", export_command))
