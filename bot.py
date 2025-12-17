@@ -53,7 +53,8 @@ def load_data():
                 full_response = res.json()
                 logger.info(f"Gelen yanıt: {full_response}")
                 
-                data = full_response.get("record", [])
+               record = full_response.get("record", {})
+               data = record.get("data", [])
                 
                 # Eğer record bir liste değilse, boş liste döndür
                 if not isinstance(data, list):
