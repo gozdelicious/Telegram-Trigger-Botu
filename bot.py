@@ -170,6 +170,20 @@ AUTO_RESPONSES = {
 
 # --- KOMUTLAR ---
 
+async def envcheck_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Environment değişkenlerini kontrol et"""
+    api_key = os.getenv("JSONBIN_API_KEY", "").strip()
+    bin_id = os.getenv("JSONBIN_BIN_ID", "").strip()
+    
+    msg = f"🔍 **Environment Kontrol:**\n\n"
+    msg += f"API Key uzunluğu: {len(api_key)}\n"
+    msg += f"API Key ilk 10 karakter: `{api_key[:10] if api_key else 'BOŞ'}`\n"
+    msg += f"API Key son 5 karakter: `{api_key[-5:] if api_key else 'BOŞ'}`\n\n"
+    msg += f"Bin ID uzunluğu: {len(bin_id)}\n"
+    msg += f"Bin ID: `{bin_id if bin_id else 'BOŞ'}`\n"
+    
+    await update.message.reply_text(msg, parse_mode="Markdown")
+    
 async def tokat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Bir kullanıcıya tokat atar 😤"""
 
@@ -428,7 +442,8 @@ def main():
     app.add_handler(CommandHandler("test", test_command))
     app.add_handler(CommandHandler("tokat", tokat_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
+    app.add_handler(CommandHandler("envcheck", envcheck_command))
+    
     logger.info("🤖 Bot çalışıyor...")
     app.run_polling()
 
