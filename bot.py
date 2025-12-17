@@ -47,44 +47,42 @@ def load_data():
     try:
         res = requests.get(url, headers=HEADERS, timeout=10)
         logger.info(f"JSONBin yanıt kodu: {res.status_code}")
-        
-        if res.status_code == 200:
-            try:
-                full_response = res.json()
-                logger.info(f"Gelen yanıt: {full_response}")
-                
-               record = full_response.get("record", {})
-               data = record.get("data", [])
-                
-                # Eğer record bir liste değilse, boş liste döndür
-               if not isinstance(data, list):
-    logger.warning("data list değil, boş listeye dönülüyor")
-    return []
-    
-                
-                logger.info(f"{len(data)} kayıt yüklendi ✅")
-                return data
-            except json.JSONDecodeError as e:
-                logger.error(f"JSON parse hatası: {e}")
-                logger.error(f"Yanıt içeriği: {res.text}")
-                return []
-        else:
-            logger.warning(f"JSONBin veri okunamadı: {res.status_code}")
-            logger.warning(f"Yanıt: {res.text}")
+
+        if res.status_code != 200:
+            logger.warning(f"JSONBin veri okunamadı: {res.text}")
             return []
-    except requests.exceptions.RequestException as e:
-        logger.error(f"İstek hatası: {e}")
+
+        full_response = res.json()
+        record = full_response.get("record", {})
+
+        data = record.get("data", [])
+
+        if not isinstance(data, list):
+            logger.warning("JSONBin data list değil, boş listeye dönülüyor")
+            return []
+
+        logger.info(f"{len(data)} kayıt yüklendi ✅")
+        return data
+
+    except Exception as e:
+        logger.exception("JSONBin load_data hatası")
         return []
+
 
 
 # --- VERİ KAYDETME ---
 def save_data(data):
     url = f"https://api.jsonbin.io/v3/b/{JSONBIN_BIN_ID}"
-   res = requests.put(url, headers=HEADERS, json={"data": data})
+    payload = {
+        "data": data
+    }
+    res = requests.put(url, headers=HEADERS, json=payload)
+
     if res.status_code == 200:
         logger.info("Veri başarıyla kaydedildi ✅")
     else:
         logger.error(f"JSONBin kaydetme hatası: {res.status_code} - {res.text}")
+
 
 
 # --- MULTİMEDYA KAYNAKLARI ---
