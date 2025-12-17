@@ -55,9 +55,11 @@ def load_data():
                 
                 data = full_response.get("record", [])
                 
-                # Eğer record bir liste değilse (örneğin dict ise), boş liste döndür
+                # Eğer record bir liste değilse, boş liste döndür
                 if not isinstance(data, list):
-                    logger.warning(f"Record bir liste değil, tip: {type(data)}")
+                    logger.warning(f"Record bir liste değil, tip: {type(data)}, düzeltiliyor...")
+                    # Otomatik düzelt
+                    save_data([])
                     return []
                 
                 logger.info(f"{len(data)} kayıt yüklendi ✅")
