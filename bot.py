@@ -170,6 +170,25 @@ AUTO_RESPONSES = {
 
 # --- KOMUTLAR ---
 
+async def apitest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """JSONBin API'yi doğrudan test et"""
+    # Önce basit bir bins listesi isteği yapalım
+    list_url = "https://api.jsonbin.io/v3/b"
+    headers = {
+        "X-Master-Key": JSONBIN_API_KEY
+    }
+    
+    try:
+        res = requests.get(list_url, headers=headers, timeout=10)
+        await update.message.reply_text(
+            f"📡 **API Test:**\n\n"
+            f"Status: {res.status_code}\n"
+            f"Yanıt: ```\n{res.text[:300]}\n```",
+            parse_mode="Markdown"
+        )
+    except Exception as e:
+        await update.message.reply_text(f"❌ Hata: {e}")
+        
 async def envcheck_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Environment değişkenlerini kontrol et"""
     api_key = os.getenv("JSONBIN_API_KEY", "").strip()
@@ -443,6 +462,7 @@ def main():
     app.add_handler(CommandHandler("tokat", tokat_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_handler(CommandHandler("envcheck", envcheck_command))
+    app.add_handler(CommandHandler("apitest", apitest_command))
     
     logger.info("🤖 Bot çalışıyor...")
     app.run_polling()
